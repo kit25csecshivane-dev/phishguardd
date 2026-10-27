@@ -1,0 +1,3289 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PhishGuard – Intelligent Phishing and Scam Detection Using Explainable Threat Analysis</title>
+  <meta name="description" content="Intelligent phishing and scam detection using explainable threat analysis. 100% client-side heuristic inspection for suspicious URLs, emails, and SMS messages." />
+  <meta property="og:title" content="PhishGuard – Intelligent Phishing and Scam Detection Using Explainable Threat Analysis" />
+  <meta property="og:description" content="Intelligent phishing and scam detection using explainable threat analysis. 100% client-side heuristic inspection for suspicious URLs, emails, and SMS messages." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <style>
+    /* -------------------------------------------------------------
+       PhishGuard Cybersecurity Theme & Design Tokens
+       CSS Variables: Dark Navy Default with Light Theme Fallback
+       ------------------------------------------------------------- */
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+      /* Dark Navy Palette (Default) */
+      --bg-canvas: #0a1220;
+      --bg-surface: #16263f;
+      --bg-surface-subtle: #111d31;
+      --bg-surface-hover: #1c304f;
+      --border-subtle: #223554;
+      --border-muted: #2f456c;
+      --border-focus: #2dd4bf;
+
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #889bb5;
+
+      --accent-teal: #2dd4bf;
+      --accent-teal-hover: #14b8a6;
+      --accent-blue: #38bdf8;
+      --accent-blue-hover: #0284c7;
+
+      --risk-low: #10b981;
+      --risk-low-bg: rgba(16, 185, 129, 0.12);
+      --risk-low-border: rgba(16, 185, 129, 0.35);
+
+      --risk-suspicious: #f59e0b;
+      --risk-suspicious-bg: rgba(245, 158, 11, 0.12);
+      --risk-suspicious-border: rgba(245, 158, 11, 0.35);
+
+      --risk-high: #ef4444;
+      --risk-high-bg: rgba(239, 68, 68, 0.14);
+      --risk-high-border: rgba(239, 68, 68, 0.4);
+
+      --code-bg: #0d1728;
+      --gauge-track: #1e3352;
+      --focus-ring: 0 0 0 3px rgba(45, 212, 191, 0.35);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Light Theme (Manual toggle or system preference) */
+    html[data-theme="light"] {
+      --bg-canvas: #f4f6fa;
+      --bg-surface: #ffffff;
+      --bg-surface-subtle: #ebf1f8;
+      --bg-surface-hover: #e2eaf5;
+      --border-subtle: #cbd5e1;
+      --border-muted: #94a3b8;
+      --border-focus: #0d9488;
+
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+
+      --accent-teal: #0d9488;
+      --accent-teal-hover: #0f766e;
+      --accent-blue: #0284c7;
+      --accent-blue-hover: #0369a1;
+
+      --risk-low: #059669;
+      --risk-low-bg: rgba(5, 150, 105, 0.1);
+      --risk-low-border: rgba(5, 150, 105, 0.3);
+
+      --risk-suspicious: #d97706;
+      --risk-suspicious-bg: rgba(217, 119, 6, 0.1);
+      --risk-suspicious-border: rgba(217, 119, 6, 0.3);
+
+      --risk-high: #dc2626;
+      --risk-high-bg: rgba(220, 38, 38, 0.1);
+      --risk-high-border: rgba(220, 38, 38, 0.3);
+
+      --code-bg: #e8eef6;
+      --gauge-track: #d1dced;
+      --focus-ring: 0 0 0 3px rgba(13, 148, 136, 0.3);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.08);
+    }
+
+    @media (prefers-color-scheme: light) {
+      html:not([data-theme="dark"]) {
+        --bg-canvas: #f4f6fa;
+        --bg-surface: #ffffff;
+        --bg-surface-subtle: #ebf1f8;
+        --bg-surface-hover: #e2eaf5;
+        --border-subtle: #cbd5e1;
+        --border-muted: #94a3b8;
+        --border-focus: #0d9488;
+        --text-primary: #0f172a;
+        --text-secondary: #334155;
+        --text-muted: #64748b;
+        --accent-teal: #0d9488;
+        --accent-teal-hover: #0f766e;
+        --accent-blue: #0284c7;
+        --accent-blue-hover: #0369a1;
+        --risk-low: #059669;
+        --risk-low-bg: rgba(5, 150, 105, 0.1);
+        --risk-low-border: rgba(5, 150, 105, 0.3);
+        --risk-suspicious: #d97706;
+        --risk-suspicious-bg: rgba(217, 119, 6, 0.1);
+        --risk-suspicious-border: rgba(217, 119, 6, 0.3);
+        --risk-high: #dc2626;
+        --risk-high-bg: rgba(220, 38, 38, 0.1);
+        --risk-high-border: rgba(220, 38, 38, 0.3);
+        --code-bg: #e8eef6;
+        --gauge-track: #d1dced;
+      }
+    }
+
+    /* -------------------------------------------------------------
+       Base & Reset Styles
+       ------------------------------------------------------------- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* -------------------------------------------------------------
+       Layout Structure
+       ------------------------------------------------------------- */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+    }
+
+    /* Top Navigation Bar - Strict 3-Zone Contract */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background-color: var(--bg-canvas);
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      height: 4.25rem;
+    }
+
+    /* Zone 1: Single text element wordmark */
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 24px;
+      height: 24px;
+      color: var(--accent-teal);
+    }
+
+    /* Zone 2: 4 single-line nav links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 0.925rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 0.35rem 0;
+      position: relative;
+      transition: color 0.15s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-link[aria-current="page"] {
+      color: var(--accent-teal);
+      font-weight: 600;
+    }
+
+    .nav-link[aria-current="page"]::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--accent-teal);
+      border-radius: 1px;
+    }
+
+    /* Zone 3: Actions */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .btn-icon-theme {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-icon-theme:hover {
+      color: var(--text-primary);
+      border-color: var(--border-muted);
+      background-color: var(--bg-surface-subtle);
+    }
+
+    .btn-primary-header {
+      background-color: var(--accent-teal);
+      color: #042f2e;
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      white-space: nowrap;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-primary-header:hover {
+      background-color: var(--accent-teal-hover);
+    }
+
+    /* Mobile Menu Toggle */
+    .mobile-nav-toggle {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 820px) {
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 4.25rem;
+        left: 0;
+        right: 0;
+        background-color: var(--bg-surface);
+        border-bottom: 1px solid var(--border-subtle);
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.25rem 1.5rem;
+        gap: 1rem;
+      }
+
+      .nav-links.is-open {
+        display: flex;
+      }
+
+      .mobile-nav-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    /* -------------------------------------------------------------
+       Pages (Hash Navigation)
+       ------------------------------------------------------------- */
+    .page-view {
+      display: none;
+      flex: 1;
+      padding-top: 2rem;
+      padding-bottom: 4rem;
+    }
+
+    .page-view.active {
+      display: block;
+    }
+
+    /* Typography & Zero-Pill Rules */
+    .section-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-teal);
+      margin-bottom: 0.75rem;
+    }
+
+    .meta-separator {
+      margin: 0 0.45rem;
+      opacity: 0.5;
+    }
+
+    .display-headline {
+      font-size: clamp(2rem, 4.5vw, 3.25rem);
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      text-wrap: balance;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-headline {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      text-wrap: balance;
+      margin-bottom: 0.75rem;
+    }
+
+    .lead-paragraph {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      max-width: 46rem;
+      line-height: 1.65;
+      margin-bottom: 2rem;
+    }
+
+    /* Cards - Flat Single-Elevation */
+    .card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      transition: border-color 0.15s ease;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .card-desc {
+      font-size: 0.925rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* -------------------------------------------------------------
+       HOME PAGE STYLES
+       ------------------------------------------------------------- */
+    .hero-section {
+      padding: 3rem 0 4rem 0;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 3.5rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1.75rem;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-teal);
+      color: #042f2e;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-teal-hover);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-surface-subtle);
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--bg-surface-hover);
+      border-color: var(--border-muted);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+
+    @media (min-width: 768px) {
+      .feature-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* Steps */
+    .steps-section {
+      margin-bottom: 4rem;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    @media (min-width: 768px) {
+      .steps-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .step-number {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent-teal);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Honest Principles */
+    .honest-section {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .honest-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .honest-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* -------------------------------------------------------------
+       ANALYZE TOOL PAGE STYLES
+       ------------------------------------------------------------- */
+    .dashboard-strip {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (min-width: 768px) {
+      .dashboard-strip {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .stat-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-value.low-risk { color: var(--risk-low); }
+    .stat-value.suspicious { color: var(--risk-suspicious); }
+    .stat-value.high-risk { color: var(--risk-high); }
+
+    /* Segmented Tabs (Buttons per frontend design rule) */
+    .tab-bar-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-segmented {
+      display: inline-flex;
+      padding: 0.25rem;
+      background-color: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      gap: 0.25rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 0.6rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn[aria-selected="true"] {
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+      font-weight: 600;
+    }
+
+    .tab-btn:hover:not([aria-selected="true"]) {
+      color: var(--text-primary);
+    }
+
+    /* Example Sample Buttons */
+    .samples-bar {
+      margin-bottom: 1.75rem;
+    }
+
+    .samples-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .samples-scroll {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .btn-sample {
+      background-color: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+
+    .btn-sample:hover {
+      background-color: var(--bg-surface-hover);
+      color: var(--text-primary);
+      border-color: var(--border-muted);
+    }
+
+    /* Forms & Inputs */
+    .analyzer-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-hint {
+      font-size: 0.775rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      font-size: 0.925rem;
+      transition: border-color 0.15s ease;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--accent-teal);
+    }
+
+    .form-textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .form-row-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .char-count {
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    /* Live Notice Box */
+    .notice-box {
+      background-color: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .notice-title {
+      font-weight: 600;
+      color: var(--accent-blue);
+      margin-bottom: 0.2rem;
+    }
+
+    /* -------------------------------------------------------------
+       RESULTS SECTION
+       ------------------------------------------------------------- */
+    .results-container {
+      margin-top: 2rem;
+      scroll-margin-top: 6rem;
+    }
+
+    .results-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .results-card.border-low { border-color: var(--risk-low-border); }
+    .results-card.border-suspicious { border-color: var(--risk-suspicious-border); }
+    .results-card.border-high { border-color: var(--risk-high-border); }
+
+    .results-header-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      align-items: center;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    @media (min-width: 800px) {
+      .results-header-grid {
+        grid-template-columns: 280px 1fr;
+      }
+    }
+
+    /* SVG Gauge Styling */
+    .gauge-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .gauge-svg {
+      width: 240px;
+      height: 130px;
+      overflow: visible;
+    }
+
+    .gauge-bg-path {
+      fill: none;
+      stroke: var(--gauge-track);
+      stroke-width: 14;
+      stroke-linecap: round;
+    }
+
+    .gauge-progress-path {
+      fill: none;
+      stroke: var(--risk-low);
+      stroke-width: 14;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
+    }
+
+    .gauge-score-text {
+      font-family: var(--font-mono);
+      font-size: 2.25rem;
+      font-weight: 700;
+      fill: var(--text-primary);
+      text-anchor: middle;
+    }
+
+    .gauge-max-text {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      fill: var(--text-muted);
+      text-anchor: middle;
+    }
+
+    .verdict-badge {
+      display: inline-block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-sm);
+      margin-top: 0.75rem;
+    }
+
+    .verdict-low {
+      background-color: var(--risk-low-bg);
+      color: var(--risk-low);
+      border: 1px solid var(--risk-low-border);
+    }
+
+    .verdict-suspicious {
+      background-color: var(--risk-suspicious-bg);
+      color: var(--risk-suspicious);
+      border: 1px solid var(--risk-suspicious-border);
+    }
+
+    .verdict-high {
+      background-color: var(--risk-high-bg);
+      color: var(--risk-high);
+      border: 1px solid var(--risk-high-border);
+    }
+
+    /* Results Meta Columns */
+    .results-meta-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 600px) {
+      .results-meta-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .result-meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meta-item-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .meta-item-val {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Honest Score Type Callout */
+    .score-type-banner {
+      background-color: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1.15rem;
+      margin: 1.5rem 0;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      color: var(--text-secondary);
+    }
+
+    .score-type-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    /* Indicators List */
+    .indicators-section {
+      margin-top: 2rem;
+    }
+
+    .indicators-heading {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .indicator-card {
+      background-color: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .indicator-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .indicator-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .indicator-title {
+      font-size: 0.975rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .indicator-weight {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--risk-suspicious);
+      background-color: var(--bg-canvas);
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .evidence-box {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      margin: 0.75rem 0;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent-teal);
+      word-break: break-all;
+    }
+
+    .indicator-detail-row {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .indicator-detail-label {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .indicator-detail-text {
+      color: var(--text-secondary);
+    }
+
+    /* JSON Report Collapsible */
+    .json-details {
+      margin-top: 2rem;
+      background-color: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1.25rem;
+    }
+
+    .json-summary {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+    }
+
+    .json-content {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .json-pre {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      overflow-x: auto;
+      max-height: 320px;
+    }
+
+    .btn-copy-json {
+      margin-top: 0.75rem;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 0.8rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-copy-json:hover {
+      background-color: var(--bg-surface-hover);
+      border-color: var(--border-muted);
+    }
+
+    /* Session History Table */
+    .history-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+
+    .history-table th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .history-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .history-table tr:hover td {
+      background-color: var(--bg-surface-hover);
+    }
+
+    .history-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-sm);
+    }
+
+    /* -------------------------------------------------------------
+       SCAM GUIDE PAGE STYLES
+       ------------------------------------------------------------- */
+    .guide-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .guide-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1100px) {
+      .guide-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .guide-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .guide-sample {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      margin: 0.75rem 0 1rem 0;
+      word-break: break-word;
+    }
+
+    .guide-section-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--accent-teal);
+      margin-bottom: 0.35rem;
+    }
+
+    .guide-red-flags {
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .guide-actions {
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      line-height: 1.5;
+      margin-top: auto;
+    }
+
+    .habits-container {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .habits-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .habits-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .habit-item {
+      background-color: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+    }
+
+    .habit-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+    }
+
+    .habit-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    .incident-protocol {
+      background-color: var(--risk-high-bg);
+      border: 1px solid var(--risk-high-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .protocol-steps {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .protocol-steps {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .protocol-step-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+    }
+
+    .protocol-step-num {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--risk-high);
+      margin-bottom: 0.5rem;
+    }
+
+    /* -------------------------------------------------------------
+       ABOUT THE PROJECT PAGE STYLES
+       ------------------------------------------------------------- */
+    .academic-meta-strip {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .academic-meta-item {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .academic-meta-item strong {
+      color: var(--text-primary);
+      margin-left: 0.25rem;
+    }
+
+    .article-section {
+      margin-bottom: 3rem;
+    }
+
+    .article-body {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .article-body p {
+      margin-bottom: 1.25rem;
+    }
+
+    .article-body ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .article-body li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Rules Table */
+    .rules-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+
+    .rules-table th {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 0.85rem 1rem;
+      background-color: var(--bg-surface-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .rules-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    .rules-table tr:hover td {
+      background-color: var(--bg-surface-hover);
+    }
+
+    .rule-weight-badge {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--risk-suspicious);
+      background-color: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+    }
+
+    .tech-pill-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    .tech-tag {
+      background-color: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+    }
+
+    /* -------------------------------------------------------------
+       FOOTER
+       ------------------------------------------------------------- */
+    .site-footer {
+      margin-top: auto;
+      background-color: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      padding: 2.5rem 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .footer-grid {
+        grid-template-columns: 2fr 1fr;
+      }
+    }
+
+    .footer-disclaimer {
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      list-style: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-teal);
+    }
+
+    /* Utilities */
+    .text-center { text-align: center; }
+    .mt-4 { margin-top: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR CONTRACT: Brand — 4 Nav Links — 1 Primary Action -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <!-- Zone 1: Single text element wordmark -->
+      <a href="#home" class="brand-link" aria-label="PhishGuard Home">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+        <span>PhishGuard</span>
+      </a>
+
+      <!-- Mobile Nav Hamburger -->
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Zone 2: 4 Single-line Navigation Links -->
+      <nav id="siteNav">
+        <ul class="nav-links" id="navLinksList">
+          <li><a href="#home" class="nav-link" id="nav-home">Home</a></li>
+          <li><a href="#analyze" class="nav-link" id="nav-analyze">Analyze</a></li>
+          <li><a href="#guide" class="nav-link" id="nav-guide">Scam Guide</a></li>
+          <li><a href="#project" class="nav-link" id="nav-project">About Project</a></li>
+        </ul>
+      </nav>
+
+      <!-- Zone 3: 1 Primary Action + Theme Toggle -->
+      <div class="header-actions">
+        <button class="btn-icon-theme" id="themeToggleBtn" aria-label="Toggle dark/light theme" title="Toggle theme">
+          <svg id="themeIconSun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg id="themeIconMoon" style="display:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+        <a href="#analyze" class="btn-primary-header">Analyze Now</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       PAGE 1: HOME (#home)
+       ========================================================= -->
+  <main id="page-home" class="page-view active" tabindex="-1">
+    <div class="container">
+      <section class="hero-section">
+        <p class="section-eyebrow">Artificial Intelligence + Cybersecurity Project<span class="meta-separator">·</span>Explainable Threat Analysis</p>
+        <h1 class="display-headline">Know why a message is a scam — before you click.</h1>
+        <p class="lead-paragraph">
+          PhishGuard uncovers the underlying manipulation mechanisms behind deceptive web links, credential phishing emails, and social engineering SMS threats. Get transparent, verifiable indicators with zero tracking.
+        </p>
+        <div class="hero-actions">
+          <a href="#analyze" class="btn-primary">
+            <span>Analyze Something Now</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+          <a href="#guide" class="btn-secondary">
+            <span>Learn the Warning Signs</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- Three Feature Cards -->
+      <section class="feature-section">
+        <h2 class="sr-only">Threat Detection Coverage</h2>
+        <div class="feature-grid">
+          <article class="card">
+            <h3 class="card-title">Phishing URLs</h3>
+            <p class="card-desc">
+              Inspects domain architecture without fetching remote code. Identifies raw IP hostnames, punycode IDN homographs, deceptive multi-level subdomains, "@" credential tricks, dangerous abused TLDs, and keyword stuffing.
+            </p>
+          </article>
+
+          <article class="card">
+            <h3 class="card-title">Suspicious Emails</h3>
+            <p class="card-desc">
+              Flags display-name impersonation, official brand claims transmitted from free consumer webmail domains (@gmail, @yahoo), artificial panic timelines, and executable payload filenames (.exe, .apk, .zip).
+            </p>
+          </article>
+
+          <article class="card">
+            <h3 class="card-title">SMS &amp; Online Scams</h3>
+            <p class="card-desc">
+              Decodes manipulative psychological traps: fake KYC expiry notices, UPI PIN capture requests, parcel detention customs fees, fake Telegram tasks, and high-yield investment Ponzi claims.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- How it Works in 3 Steps -->
+      <section class="steps-section">
+        <h2 class="section-headline">How It Works</h2>
+        <p class="card-desc">Three transparent steps from raw text to explainable threat breakdown.</p>
+        <div class="steps-grid">
+          <div class="card">
+            <div class="step-number">Step 01</div>
+            <h3 class="card-title">Paste</h3>
+            <p class="card-desc">
+              Insert any suspicious web URL, full email message (sender, subject, body), or SMS message into the parser. Inputs stay entirely inside your browser memory.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="step-number">Step 02</div>
+            <h3 class="card-title">Detect</h3>
+            <p class="card-desc">
+              Our lexical tokenizer and weighted rules matrix cross-examine syntax, domain authorities, urgency coercion, and credential traps in parallel without network requests.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="step-number">Step 03</div>
+            <h3 class="card-title">Understand</h3>
+            <p class="card-desc">
+              Review a comprehensive explainability report. Every single matched indicator cites the exact verbatim snippet as evidence, why it matters, and recommended counter-actions.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Built to be Honest Section -->
+      <section class="honest-section">
+        <p class="section-eyebrow">Transparent Methodology</p>
+        <h2 class="section-headline">Built to Be Honest</h2>
+        <p class="card-desc">
+          Cybersecurity tools should never pretend to possess omniscience. PhishGuard is built upon strict academic integrity and transparent limitations.
+        </p>
+
+        <div class="honest-grid">
+          <div>
+            <h3 class="card-title">Heuristics, Not Probabilities</h3>
+            <p class="card-desc">
+              The 0–100 score reflects additive weighted indicator signals based on common attack patterns. It is NOT a calibrated statistical probability.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="card-title">Indicators, Not Final Proof</h3>
+            <p class="card-desc">
+              High scores flag dangerous, unverified patterns; they are not judicial verdicts. Similarly, zero detected flags cannot guarantee complete safety against unknown novel vectors.
+            </p>
+          </div>
+
+          <div>
+            <h3 class="card-title">100% Client-Side Privacy</h3>
+            <p class="card-desc">
+              Your messages and URLs are never logged, never stored in localStorage, and never transmitted across the network. Inspection occurs strictly in browser memory.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- =========================================================
+       PAGE 2: ANALYZE (#analyze)
+       ========================================================= -->
+  <main id="page-analyze" class="page-view" tabindex="-1">
+    <div class="container">
+      <div class="mb-6">
+        <p class="section-eyebrow">Explainable Threat Detection Engine</p>
+        <h1 class="section-headline">Analyze Suspicious Message or URL</h1>
+        <p class="card-desc">
+          Paste content below or click a sample scenario to examine transparent threat indicators.
+        </p>
+      </div>
+
+      <!-- In-Memory Session Dashboard -->
+      <section class="dashboard-strip" aria-label="Session statistics summary">
+        <div class="stat-card">
+          <div class="stat-label">Total Analyses</div>
+          <div class="stat-value tabular-nums" id="statTotalCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Low Risk (0–29)</div>
+          <div class="stat-value tabular-nums low-risk" id="statLowCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Suspicious (30–59)</div>
+          <div class="stat-value tabular-nums suspicious" id="statSuspiciousCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">High Risk (60+)</div>
+          <div class="stat-value tabular-nums high-risk" id="statHighCount">0</div>
+        </div>
+      </section>
+
+      <!-- Quick Fill Sample Scenarios -->
+      <section class="samples-bar">
+        <span class="samples-label">Load Test Scenario:</span>
+        <div class="samples-scroll" role="group" aria-label="Quick test samples">
+          <button type="button" class="btn-sample" data-sample="safe-url">Safe URL</button>
+          <button type="button" class="btn-sample" data-sample="ip-url">IP Address Login URL</button>
+          <button type="button" class="btn-sample" data-sample="shortened-url">Shortened Link</button>
+          <button type="button" class="btn-sample" data-sample="fake-kyc-sms">Fake KYC SMS</button>
+          <button type="button" class="btn-sample" data-sample="parcel-fee-sms">Parcel Fee SMS</button>
+          <button type="button" class="btn-sample" data-sample="prize-scam-sms">Prize Scam</button>
+          <button type="button" class="btn-sample" data-sample="harmless-sms">Harmless Message</button>
+          <button type="button" class="btn-sample" data-sample="phishing-email">Phishing Email</button>
+        </div>
+      </section>
+
+      <!-- Analyzer Box with Tabs -->
+      <section class="analyzer-card">
+        <div class="tab-bar-container">
+          <div class="tab-segmented" role="tablist" aria-label="Threat Analysis Categories">
+            <button role="tab" class="tab-btn" id="tab-btn-url" aria-selected="true" aria-controls="panel-url">URL Analysis</button>
+            <button role="tab" class="tab-btn" id="tab-btn-email" aria-selected="false" aria-controls="panel-email">Email Analysis</button>
+            <button role="tab" class="tab-btn" id="tab-btn-sms" aria-selected="false" aria-controls="panel-sms">SMS / Message</button>
+          </div>
+
+          <button type="button" class="btn-secondary" id="clearInputsBtn" style="padding:0.4rem 0.8rem; font-size:0.8rem;">
+            Clear Form
+          </button>
+        </div>
+
+        <!-- TAB 1: URL Form -->
+        <div role="tabpanel" id="panel-url" class="tab-panel active" aria-labelledby="tab-btn-url">
+          <form id="urlForm">
+            <div class="form-group">
+              <label for="urlInput" class="form-label">Suspicious Web Link / URL</label>
+              <input type="text" id="urlInput" class="form-input" placeholder="e.g. http://192.168.1.55/sbi/login.php?verify=account" maxlength="2048" autocomplete="off" spellcheck="false" required />
+              <p class="form-hint">Safe parser only: The URL is structurally tokenized; PhishGuard NEVER requests or connects to the destination server.</p>
+            </div>
+
+            <div class="notice-box">
+              <div class="notice-title">Important Security Note on HTTPS:</div>
+              <div>
+                HTTPS alone does not prove a site is safe or legitimate. Any attacker can obtain a free SSL/TLS certificate (e.g. Let's Encrypt) to encrypt communication with a fraudulent site.
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <span class="char-count" id="urlCharCount">0 / 2048 chars</span>
+              <button type="submit" class="btn-primary" id="analyzeUrlBtn">
+                <span>Run URL Threat Analysis</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 2: Email Form -->
+        <div role="tabpanel" id="panel-email" class="tab-panel" aria-labelledby="tab-btn-email">
+          <form id="emailForm">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="emailSender" class="form-label">Sender Address / Display Name</label>
+                <input type="text" id="emailSender" class="form-input" placeholder="e.g. HDFC Support <hdfc-alerts-team@gmail.com>" maxlength="254" autocomplete="off" />
+                <p class="form-hint">Helps detect official brand impersonation originating from free webmail accounts.</p>
+              </div>
+
+              <div class="form-group">
+                <label for="emailSubject" class="form-label">Subject Line</label>
+                <input type="text" id="emailSubject" class="form-input" placeholder="e.g. URGENT: Complete KYC verification within 24 hours to prevent account block" maxlength="300" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="emailBody" class="form-label">Email Message Body</label>
+              <textarea id="emailBody" class="form-textarea" placeholder="Paste the full text of the email here..." maxlength="10000" required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="emailAttachments" class="form-label">Attached File Names (Optional)</label>
+              <input type="text" id="emailAttachments" class="form-input" placeholder="e.g. security-patch.exe, invoice.zip, update.apk" maxlength="300" />
+              <p class="form-hint">Separate multiple filenames with commas. Detects high-risk executable and script attachments.</p>
+            </div>
+
+            <div class="form-actions">
+              <span class="char-count" id="emailCharCount">0 / 10000 chars</span>
+              <button type="submit" class="btn-primary" id="analyzeEmailBtn">
+                <span>Run Email Threat Analysis</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAB 3: SMS / Message Form -->
+        <div role="tabpanel" id="panel-sms" class="tab-panel" aria-labelledby="tab-btn-sms">
+          <form id="smsForm">
+            <div class="form-group">
+              <label for="smsSender" class="form-label">Sender ID or Phone Number (Optional)</label>
+              <input type="text" id="smsSender" class="form-input" placeholder="e.g. +91 98765 43210 or VK-SBIINB" maxlength="50" autocomplete="off" />
+            </div>
+
+            <div class="form-group">
+              <label for="smsBody" class="form-label">SMS / Chat Message Text</label>
+              <textarea id="smsBody" class="form-textarea" placeholder="Paste the SMS, WhatsApp text, or Telegram message here..." maxlength="5000" required></textarea>
+            </div>
+
+            <div class="form-actions">
+              <span class="char-count" id="smsCharCount">0 / 5000 chars</span>
+              <button type="submit" class="btn-primary" id="analyzeSmsBtn">
+                <span>Run SMS Threat Analysis</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- RESULTS DISPLAY SECTION (aria-live polite) -->
+      <section id="resultsSection" class="results-container" aria-live="polite" style="display: none;">
+        <div id="resultsCard" class="results-card">
+          <!-- Header with Semicircle Risk Gauge and Metadata -->
+          <div class="results-header-grid">
+            <div class="gauge-wrapper">
+              <svg class="gauge-svg" viewBox="0 0 240 130" aria-hidden="true">
+                <!-- Semicircle background track: arc from (20, 115) to (220, 115) radius 100 -->
+                <path class="gauge-bg-path" d="M 20 115 A 100 100 0 0 1 220 115" />
+                <!-- Progress path (arc length ~ 314.16) -->
+                <path id="gaugeProgressPath" class="gauge-progress-path" d="M 20 115 A 100 100 0 0 1 220 115" stroke-dasharray="314.16" stroke-dashoffset="314.16" />
+                <!-- Center Score Text -->
+                <text id="gaugeScoreText" class="gauge-score-text" x="120" y="105">0</text>
+                <text class="gauge-max-text" x="120" y="122">OUT OF 100</text>
+              </svg>
+              <div id="verdictBadge" class="verdict-badge verdict-low">Low Risk</div>
+            </div>
+
+            <div class="results-meta-list">
+              <div class="result-meta-item">
+                <span class="meta-item-label">Classification</span>
+                <span class="meta-item-val" id="resultClassificationText">Low Risk (0–29)</span>
+              </div>
+
+              <div class="result-meta-item">
+                <span class="meta-item-label">Threat Category</span>
+                <span class="meta-item-val" id="resultCategoryText">Nominal / No Critical Indicators</span>
+              </div>
+
+              <div class="result-meta-item">
+                <span class="meta-item-label">Analysis Timestamp</span>
+                <span class="meta-item-val tabular-nums" id="resultTimestampText">-</span>
+              </div>
+
+              <div class="result-meta-item">
+                <span class="meta-item-label">Detection Method</span>
+                <span class="meta-item-val" id="resultMethodText">Transparent Heuristic Rule Matrix</span>
+              </div>
+
+              <div class="result-meta-item">
+                <span class="meta-item-label">Confidence Level</span>
+                <span class="meta-item-val" id="resultConfidenceText">High (Multiple Signals)</span>
+              </div>
+
+              <div class="result-meta-item">
+                <span class="meta-item-label">Indicators Matched</span>
+                <span class="meta-item-val tabular-nums" id="resultMatchedCountText">0 rules triggered</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Honest Score Type Callout -->
+          <div class="score-type-banner">
+            <div class="score-type-title">Score Type: Heuristic additive sum, NOT a calibrated statistical probability.</div>
+            <p>
+              Caveat: Heuristic indicators flag observable manipulation patterns commonly found in cyber attacks. Legitimate transactional notifications may occasionally trigger rules, while sophisticated targeted attacks may attempt evasion. Always verify through independent official channels.
+            </p>
+          </div>
+
+          <!-- Verbatim Evidence & Indicators Breakdown -->
+          <div class="indicators-section">
+            <h3 class="indicators-heading">Explainable Indicators &amp; Verbatim Evidence</h3>
+            <div id="indicatorsList">
+              <!-- Dynamically populated with safe textContent DOM nodes -->
+            </div>
+          </div>
+
+          <!-- Collapsible JSON Report -->
+          <details class="json-details">
+            <summary class="json-summary">
+              <span>View Full Diagnostic JSON Report</span>
+              <span style="font-size: 0.8rem; color: var(--accent-teal);">Expand / Collapse</span>
+            </summary>
+            <div class="json-content">
+              <pre class="json-pre"><code id="jsonReportCode">{}</code></pre>
+              <button type="button" class="btn-copy-json" id="copyJsonBtn">
+                <span>Copy JSON Report</span>
+              </button>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- In-Memory Session History (Last 10 analyses, scores only, NO user text stored) -->
+      <section class="history-card">
+        <div class="history-header">
+          <div>
+            <h3 class="card-title" style="margin-bottom:0.2rem;">Session Analysis Log</h3>
+            <p class="card-desc" style="font-size:0.8rem;">Kept in volatile browser memory only. No message text or URLs are saved.</p>
+          </div>
+          <button type="button" class="btn-secondary" id="clearHistoryBtn" style="padding:0.4rem 0.8rem; font-size:0.8rem;">
+            Clear History
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table class="history-table" aria-label="Session Analysis Log">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Time</th>
+                <th scope="col">Input Type</th>
+                <th scope="col">Heuristic Score</th>
+                <th scope="col">Classification</th>
+                <th scope="col">Indicators Triggered</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="6" class="text-center" style="padding: 1.5rem; color: var(--text-muted);">
+                  No analyses performed in this session yet. Run an analysis above to see scores.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- =========================================================
+       PAGE 3: SCAM GUIDE (#guide)
+       ========================================================= -->
+  <main id="page-guide" class="page-view" tabindex="-1">
+    <div class="container">
+      <div class="mb-6">
+        <p class="section-eyebrow">Real-World Case Studies &amp; Educational Reference</p>
+        <h1 class="section-headline">Common Scams &amp; Threat Anatomy</h1>
+        <p class="lead-paragraph">
+          Examine six prevailing scam modalities prevalent across India, their observable red flags, and safe verification habits.
+        </p>
+      </div>
+
+      <!-- 6 Scam Cards with Indian Context -->
+      <div class="guide-grid">
+        <!-- 1. Fake KYC Update -->
+        <article class="guide-card">
+          <h3 class="card-title">01. Fake KYC Update or Expiry</h3>
+          <div class="guide-sample">
+            "Dear SBI Customer, your YONO NetBanking KYC has expired. Your debit card will be blocked today. Update PAN &amp; Aadhaar immediately at: http://192.168.0.4/sbi-kyc"
+          </div>
+          <div class="guide-section-label">Red Flags</div>
+          <p class="guide-red-flags">
+            Arbitrary same-day deadline, unauthenticated IP address link or lookalike domain, demand for identity and Aadhaar credentials via unverified HTTP link.
+          </p>
+          <div class="guide-section-label">What to Do</div>
+          <p class="guide-actions">
+            Never click links in SMS. Indian banks explicitly state they will never send links asking you to update KYC or enter card PINs. Use only the official bank app or visit your physical branch.
+          </p>
+        </article>
+
+        <!-- 2. OTP & UPI Collect Request -->
+        <article class="guide-card">
+          <h3 class="card-title">02. OTP and UPI Collect Request Fraud</h3>
+          <div class="guide-sample">
+            "OLX Buyer: I sent ₹15,000 for your sofa. Scan this QR code or accept the PhonePe collect request and enter your 6-digit UPI PIN to receive money in your account."
+          </div>
+          <div class="guide-section-label">Red Flags</div>
+          <p class="guide-red-flags">
+            Claiming that entering your secret UPI PIN or scanning a merchant QR code is necessary to *receive* funds.
+          </p>
+          <div class="guide-section-label">What to Do</div>
+          <p class="guide-actions">
+            Golden Rule of UPI: Entering a UPI PIN or scanning a QR code ALWAYS debits money from your bank account. Receiving funds requires zero authentication from the receiver. Reject immediately.
+          </p>
+        </article>
+
+        <!-- 3. Parcel & Customs Duty -->
+        <article class="guide-card">
+          <h3 class="card-title">03. Parcel &amp; Customs Duty Scam</h3>
+          <div class="guide-sample">
+            "IndiaPost: Package #IN9821734 detained at Mumbai customs clearance due to unpaid duty fee of ₹48. Pay within 12h to prevent return: http://indiapost-customs-pay.top"
+          </div>
+          <div class="guide-section-label">Red Flags</div>
+          <p class="guide-red-flags">
+            Abused top-level domain (.top), tiny token fee (₹48) designed to harvest full credit/debit card details and CVV on a cloned payment gateway, countdown pressure.
+          </p>
+          <div class="guide-section-label">What to Do</div>
+          <p class="guide-actions">
+            Track parcels only on the genuine government portal (indiapost.gov.in). Postal authorities never demand payment via unofficial domains.
+          </p>
+        </article>
+
+        <!-- 4. Fake Work-From-Home Jobs -->
+        <article class="guide-card">
+          <h3 class="card-title">04. Fake Work-From-Home / Part-Time Tasks</h3>
+          <div class="guide-sample">
+            "Earn ₹5,000 to ₹10,000 daily from home! Like YouTube videos and write hotel reviews on Google Maps. No experience needed. Contact HR Anjali on Telegram: @hr_task_pay"
+          </div>
+          <div class="guide-section-label">Red Flags</div>
+          <p class="guide-red-flags">
+            Extravagant payouts for effortless actions, anonymous Telegram routing, initial small token payouts followed by demands for "prepaid recharge deposits" to release funds.
+          </p>
+          <div class="guide-section-label">What to Do</div>
+          <p class="guide-actions">
+            Legitimate multinational enterprises never recruit through anonymous Telegram handles or require candidates to deposit funds to unlock tasks. Discard immediately.
+          </p>
+        </article>
+
+        <!-- 5. Investment Schemes -->
+        <article class="guide-card">
+          <h3 class="card-title">05. Guaranteed Investment Schemes</h3>
+          <div class="guide-sample">
+            "VIP WhatsApp Trading Club: 100% guaranteed return in 48 hours! Deposit ₹20,000 to get ₹60,000 profit. SEBI registered automated crypto algorithmic pool."
+          </div>
+          <div class="guide-section-label">Red Flags</div>
+          <p class="guide-red-flags">
+            Promises of zero-risk guaranteed profits, unverified SEBI claims, funds collected into private personal savings accounts or obscure crypto wallets.
+          </p>
+          <div class="guide-section-label">What to Do</div>
+          <p class="guide-actions">
+            Financial market investments inherently carry volatility; guaranteed returns are illegal and mathematically impossible. Verify registered brokers exclusively on sebi.gov.in.
+          </p>
+        </article>
+
+        <!-- 6. Prize & Lottery Claims -->
+        <article class="guide-card">
+          <h3 class="card-title">06. Prize &amp; Lottery Claims (KBC Hoax)</h3>
+          <div class="guide-sample">
+            "Congratulations! Your mobile number won ₹25,00,000 in KBC All India WhatsApp Lucky Draw. Transfer ₹2,500 government processing GST to receive cheque."
+          </div>
+          <div class="guide-section-label">Red Flags</div>
+          <p class="guide-red-flags">
+            Winning a contest you never entered or purchased tickets for, advance-fee demands for GST/clearance, transfer demanded via personal UPI ID.
+          </p>
+          <div class="guide-section-label">What to Do</div>
+          <p class="guide-actions">
+            You cannot win a draw you did not participate in. Legitimate prize distributions never request winners to remit advance fees. Block the sender.
+          </p>
+        </article>
+      </div>
+
+      <!-- Safer Link Habits Section -->
+      <section class="habits-container">
+        <h2 class="section-headline">Safer Link &amp; Communication Habits</h2>
+        <div class="habits-grid">
+          <div class="habit-item">
+            <h3 class="habit-title">Inspect the Root Domain, Not the Subdomain</h3>
+            <p class="habit-desc">
+              In <code>sbi.bank.com.scam-domain.xyz/login</code>, the real destination server is <code>scam-domain.xyz</code>. Always identify the domain immediately before the first single forward slash.
+            </p>
+          </div>
+
+          <div class="habit-item">
+            <h3 class="habit-title">HTTPS Is Not an Endorsement of Safety</h3>
+            <p class="habit-desc">
+              The padlock icon only indicates the connection is encrypted; it does not verify the moral character of the server operator. Over 80% of modern phishing sites utilize valid SSL certificates.
+            </p>
+          </div>
+
+          <div class="habit-item">
+            <h3 class="habit-title">Type Known URLs Directly</h3>
+            <p class="habit-desc">
+              Whenever you receive an alert regarding banking, taxes, courier delivery, or telecom services, open a new browser tab and type the verified official address manually.
+            </p>
+          </div>
+
+          <div class="habit-item">
+            <h3 class="habit-title">Expand Obfuscated Shorteners</h3>
+            <p class="habit-desc">
+              URL shorteners (such as bit.ly or tinyurl.com) intentionally obscure destination domains. Use native URL previewers or append <code>+</code> to inspect the true endpoint.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- If It Already Happened Emergency Protocol -->
+      <section class="incident-protocol">
+        <h2 class="section-headline" style="color: var(--risk-high);">If It Already Happened: Immediate Incident Response</h2>
+        <p class="card-desc">
+          If you inadvertently entered credentials, shared an OTP, or approved a fraudulent transaction, act within minutes:
+        </p>
+
+        <div class="protocol-steps">
+          <div class="protocol-step-card">
+            <div class="protocol-step-num">Step 01 · Immediate Containment</div>
+            <h3 class="card-title">Freeze Banking &amp; Cards</h3>
+            <p class="card-desc">
+              Immediately contact your bank's 24x7 toll-free fraud helpline to freeze compromised debit/credit cards, disable net banking access, and de-link UPI IDs.
+            </p>
+          </div>
+
+          <div class="protocol-step-card">
+            <div class="protocol-step-num">Step 02 · Identity Isolation</div>
+            <h3 class="card-title">Rotate Passwords</h3>
+            <p class="card-desc">
+              From a clean, uncompromised device, change passwords on your primary email, banking portal, and mobile provider account. Terminate active sessions everywhere.
+            </p>
+          </div>
+
+          <div class="protocol-step-card">
+            <div class="protocol-step-num">Step 03 · Statutory Reporting</div>
+            <h3 class="card-title">Lodge Cybercrime Report</h3>
+            <p class="card-desc">
+              Report the incident to the National Cyber Crime Reporting Portal at <strong>cybercrime.gov.in</strong> or dial national helpline <strong>1930</strong> immediately.
+            </p>
+          </div>
+        </div>
+
+        <div class="notice-box" style="margin-top: 1.5rem; background-color: var(--bg-surface);">
+          <div class="notice-title">Important Verification Advisory:</div>
+          <div>
+            Always verify helpline telephone numbers and official portal addresses directly on the official government website (<strong>cybercrime.gov.in</strong>) or your bank's physical passbook, never from search engine advertisement links.
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- =========================================================
+       PAGE 4: ABOUT THE PROJECT (#project)
+       ========================================================= -->
+  <main id="page-project" class="page-view" tabindex="-1">
+    <div class="container">
+      <div class="mb-6">
+        <p class="section-eyebrow">Academic Research Project · AI &amp; Cybersecurity</p>
+        <h1 class="section-headline">PhishGuard Architecture &amp; Methodology</h1>
+        <p class="lead-paragraph">
+          An explainable threat analysis paradigm designed for zero-latency client-side screening without server-side tracking.
+        </p>
+      </div>
+
+      <div class="academic-meta-strip">
+        <div class="academic-meta-item">Project Domain: <strong>Artificial Intelligence + Cybersecurity</strong></div>
+        <div class="academic-meta-item">Project Type: <strong>Undergraduate Capstone / Academic Research</strong></div>
+        <div class="academic-meta-item">Runtime Model: <strong>100% Client-Side Engine (Zero Network Requests)</strong></div>
+      </div>
+
+      <!-- Abstract -->
+      <section class="article-section">
+        <h2 class="section-headline">Abstract</h2>
+        <div class="article-body">
+          <p>
+            Traditional anti-phishing solutions predominantly rely on centralized blacklist feeds (such as Google Safe Browsing or Spamhaus) or complex server-side deep learning classifiers. While valuable, blacklists exhibit notable latency windows (often several hours to days) during which novel zero-day phishing campaigns remain uncataloged. Conversely, opaque deep neural networks provide binary verdicts without providing human-interpretable rationale, leaving non-technical users unaware of the specific manipulation techniques employed against them.
+          </p>
+          <p>
+            PhishGuard proposes an explainable threat analysis architecture executing entirely within client-side browser runtime memory. By combining structural URL decomposition, multi-factor lexical tokenization, and transparent rule-based weight accumulation, the system delivers immediate, zero-latency risk evaluation while presenting users with verbatim textual evidence, heuristic weights, and concrete remediation actions.
+          </p>
+        </div>
+      </section>
+
+      <!-- Objectives -->
+      <section class="article-section">
+        <h2 class="section-headline">Project Objectives</h2>
+        <div class="article-body">
+          <ul>
+            <li><strong>Zero-Latency Edge Execution:</strong> Perform all parsing and risk scoring within client browser execution memory, eliminating external network dependencies, privacy leaks, and latency.</li>
+            <li><strong>Explainable Evidence Attribution:</strong> Ensure every triggered indicator is paired with verbatim matched text from the input, providing transparent proof rather than ungrounded claims.</li>
+            <li><strong>Educational User Empowerment:</strong> Demystify deceptive social engineering patterns (such as UPI collect confusion, fake KYC deadlines, and authority "@" URL tricks) to foster proactive threat awareness.</li>
+            <li><strong>Strict Privacy Guarantees:</strong> Guarantee zero persistence of user input data: no cookies, no localStorage, and no telemetry tracking.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Transparent ML Disclaimer -->
+      <section class="article-section">
+        <h2 class="section-headline">Machine Learning: What Is and Is Not Here</h2>
+        <div class="card" style="border-color: var(--accent-blue);">
+          <div class="article-body">
+            <p>
+              In the preliminary research phase of this college project, we prototyped supervised machine learning classifiers (evaluating <strong>Logistic Regression</strong> versus <strong>Random Forest</strong> algorithms) trained on 15 extracted URL lexical features (including Shannon character entropy, path depth, token counts, digit ratios, and subdomain nesting).
+            </p>
+            <p>
+              While those models achieved high nominal validation accuracy (~96.4%) in laboratory evaluations on a small synthetic benchmark dataset, <strong>academic benchmark metrics fail to generalize reliably to real-world zero-day phishing campaigns</strong>. Synthetic datasets suffer from severe distribution shift, concept drift, and vulnerability to simple adversarial perturbations (such as character leetspeak or query padding).
+            </p>
+            <p>
+              <strong>Consequently, this public demonstration website intentionally contains NO server-side machine learning model and NO external reputation lookups.</strong> Instead, it relies purely on the verified, transparent heuristic rules engine detailed below. We deliberately avoid black-box probabilistic scoring claims in favor of explainable, verifiable engineering.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dynamic Rules Matrix Table -->
+      <section class="article-section">
+        <h2 class="section-headline">Heuristic Detection Rules Matrix</h2>
+        <p class="card-desc mb-6">
+          The table below is generated dynamically from the exact JavaScript rules matrix running in the analyzer:
+        </p>
+
+        <div class="table-container card" style="padding: 0;">
+          <table class="rules-table" aria-label="Heuristic Detection Rules Matrix">
+            <thead>
+              <tr>
+                <th scope="col">Rule ID</th>
+                <th scope="col">Category</th>
+                <th scope="col">Weight</th>
+                <th scope="col">Rule Description</th>
+                <th scope="col">Threat Rationale (Why It Matters)</th>
+                <th scope="col">Recommended User Action</th>
+              </tr>
+            </thead>
+            <tbody id="projectRulesTableBody">
+              <!-- Dynamically populated from RULES array -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Limitations & Future Enhancements -->
+      <section class="article-section">
+        <h2 class="section-headline">System Limitations</h2>
+        <div class="article-body">
+          <ul>
+            <li><strong>Static Lexical Boundary:</strong> The engine inspects lexical syntax and text patterns. It cannot execute remote client-side JavaScript or observe dynamic page rendering without fetching the URL (which would pose security risks).</li>
+            <li><strong>Heuristic Evasion:</strong> Sophisticated adversaries utilizing novel non-standard phrasing or fragmented image-only text without OCR may evade pure lexical regex matching.</li>
+            <li><strong>Context Blindness:</strong> The system cannot independently verify whether an email sender was authorized internally by an organization without performing cryptographic SPF/DKIM verification.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="article-section">
+        <h2 class="section-headline">Future Enhancements</h2>
+        <div class="article-body">
+          <ul>
+            <li><strong>Client-Side WebAssembly ML:</strong> Embedding a quantized ONNX model running entirely in WebAssembly via Web Workers to combine zero-network privacy with generalized feature classification.</li>
+            <li><strong>Visual Homoglyph Levenshtein Mapping:</strong> Implementing Unicode confusable matrix distance to flag visual lookalikes of top 1,000 corporate domains.</li>
+            <li><strong>Cryptographic Bloom Filters:</strong> Distributing compact, privacy-preserving cryptographic hashes of known malicious domains for offline lookup without leaking queries.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Technology Stack & Download Single File -->
+      <section class="article-section">
+        <h2 class="section-headline">Technology Stack</h2>
+        <div class="tech-pill-grid">
+          <span class="tech-tag">HTML5 Semantic Elements</span>
+          <span class="tech-tag">Modern CSS3 Custom Properties (Variables)</span>
+          <span class="tech-tag">Vanilla ES6+ JavaScript</span>
+          <span class="tech-tag">Zero External Libraries</span>
+          <span class="tech-tag">Zero Network Requests</span>
+          <span class="tech-tag">Zero localStorage Persistence</span>
+          <span class="tech-tag">WAI-ARIA Accessibility</span>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          <button type="button" class="btn-primary" id="downloadHtmlBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download Standalone HTML File</span>
+          </button>
+          <p class="form-hint" style="margin-top: 0.5rem;">
+            Save this complete application as a single self-contained .html file for offline evaluation or academic review.
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- =========================================================
+       FOOTER (On every page)
+       ========================================================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-disclaimer">
+        <p style="margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+          100% Client-Side Privacy Guarantee
+        </p>
+        <p style="margin-bottom: 0.75rem;">
+          Everything runs entirely inside your browser's volatile runtime memory. Nothing is stored in localStorage, and no message text or URLs are transmitted across any network.
+        </p>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">
+          Indicators are heuristic warning signals based on common attack patterns, not legal or technical proof of fraud. The absence of indicators does not guarantee safety.
+        </p>
+      </div>
+
+      <div>
+        <p style="margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">Navigation</p>
+        <ul class="footer-links">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#analyze">Analyze Tool</a></li>
+          <li><a href="#guide">Scam Guide</a></li>
+          <li><a href="#project">Project Architecture</a></li>
+        </ul>
+        <p style="margin-top: 1.25rem; font-size: 0.8rem; color: var(--text-muted);">
+          PhishGuard Academic Prototype · Domain: Artificial Intelligence &amp; Cybersecurity
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =========================================================
+       JAVASCRIPT ENGINE (100% Vanilla ES6+, Zero External Deps)
+       ========================================================= -->
+  <script>
+    (function() {
+      'use strict';
+
+      /* ---------------------------------------------------------
+         1. Comprehensive Heuristic Threat Rules Matrix
+         Each rule: id, category, weight, regex, title, whyItMatters, recommendedAction
+         --------------------------------------------------------- */
+      const RULES = [
+        {
+          id: 'otp-pin-cvv',
+          category: 'Credential Harvesting',
+          weight: 35,
+          regex: /(?:\b(?:otp|one[- ]?time[- ]?password|cvv|cvc|pin|password|passcode|secret[- ]?code|mpin|upi[- ]?pin|netbanking[- ]?password)\b)/i,
+          title: 'OTP, PIN, CVV, or Password Request',
+          whyItMatters: 'Legitimate financial institutions and tech platforms explicitly warn that official support will never solicit your OTP, card CVV, secret PIN, or login password. Requesting these credentials is the definitive sign of an unauthorized account takeover attempt.',
+          recommendedAction: 'Never disclose OTPs, PINs, or passwords to anyone under any circumstances, even if they claim to represent your bank or police.'
+        },
+        {
+          id: 'fake-kyc',
+          category: 'Financial Fraud',
+          weight: 30,
+          regex: /(?:\b(?:kyc\s*(?:update|expired?|pending|verification|block|suspend|deactivat|incomplete)|pan\s*(?:card)?\s*(?:link|update|blocked)|aadhaar\s*(?:link|update|upload)|cif\s*update)\b)/i,
+          title: 'Fake KYC Update or Expiry Threat',
+          whyItMatters: 'Fraudsters weaponize bank regulatory deadlines (Know Your Customer) to induce panic. Banks never mandate updating KYC documents via hyperlinks in SMS messages or by requesting direct credential uploads on non-bank domains.',
+          recommendedAction: 'Do not click the link. If you suspect your account KYC is pending, visit your official bank branch or log in exclusively via your official banking mobile app.'
+        },
+        {
+          id: 'urgency-threats',
+          category: 'Psychological Manipulation',
+          weight: 15,
+          regex: /(?:\b(?:immediate(?:ly)?\s*action|account\s*(?:will\s*be\s*)?(?:blocked|suspended|frozen|deactivated|closed|terminated)|within\s*(?:24|12|6|2|48)\s*hours?|last\s*chance|final\s*warning|urgent\s*notice|act\s*now|deactivation\s*notice)\b)/i,
+          title: 'Urgency or Account-Block Threat',
+          whyItMatters: 'Artificial emergency timelines (e.g. "blocked within 24 hours") are deliberately engineered by social engineers to provoke unverified panic and bypass your rational skepticism.',
+          recommendedAction: 'Take a breath and pause. Legitimate service disputes provide formal recourse and ample time. Contact the entity through independent official contact channels.'
+        },
+        {
+          id: 'fake-prize-lottery',
+          category: 'Advance-Fee Fraud',
+          weight: 30,
+          regex: /(?:\b(?:won\s*(?:a\s*)?(?:prize|lottery|reward|jackpot|crore|lakhs?|car|iphone|cash)|kbc\s*(?:lottery|lucky\s*draw)|congratulations\s*you\s*(?:have\s*)?won|lucky\s*(?:draw|winner)|claim\s*your\s*(?:reward|prize|cash\s*bonus))\b)/i,
+          title: 'Fake Prize, Lottery, or Lucky Draw',
+          whyItMatters: 'Unsolicited prize declarations exploit human optimism to demand upfront "processing fees", taxes, or banking credentials under the false premise of releasing a jackpot.',
+          recommendedAction: 'If you did not enter or buy a ticket for a competition, you have not won. Never pay any fee or registration charge to claim prize money.'
+        },
+        {
+          id: 'upi-fraud',
+          category: 'Financial Fraud',
+          weight: 30,
+          regex: /(?:\b(?:enter\s*(?:your\s*)?(?:upi\s*)?pin\s*to\s*receive|scan\s*(?:this\s*)?qr\s*(?:code\s*)?to\s*receive|upi\s*collect\s*request|phonepe\s*reward\s*scan|gpay\s*scratch\s*card\s*scan|paytm\s*cashback\s*qr|receive\s*money\s*(?:via|by)\s*pin)\b)/i,
+          title: 'UPI Collect Request, QR Code, or PIN Fraud',
+          whyItMatters: 'Entering a UPI PIN or scanning a QR code is exclusively used to SEND money from your bank account, NEVER to receive funds. Attackers exploit misunderstandings of UPI mechanics to drain accounts.',
+          recommendedAction: 'Decline the collect request immediately. Remember that receiving money in UPI never requires you to enter a PIN or scan a merchant QR code.'
+        },
+        {
+          id: 'parcel-customs',
+          category: 'Delivery Extortion',
+          weight: 30,
+          regex: /(?:\b(?:parcel\s*(?:is\s*)?(?:detained|on\s*hold|pending|stuck)|customs\s*(?:duty|fee|clearance|charge)|delivery\s*failed\s*due\s*to|unpaid\s*shipping\s*fee|indiapost\s*package\s*issue|courier\s*(?:fee|clearance)|update\s*delivery\s*address\s*fee)\b)/i,
+          title: 'Parcel Detention or Customs Fee Scam',
+          whyItMatters: 'Attackers impersonate postal services like India Post or private couriers, demanding tiny token payments (₹20–₹50) to capture credit/debit card numbers and CVVs on fake payment gateways.',
+          recommendedAction: 'Track parcels exclusively on the carrier official website (e.g. indiapost.gov.in). Do not make payments through forwarded SMS links.'
+        },
+        {
+          id: 'fake-job',
+          category: 'Employment Fraud',
+          weight: 25,
+          regex: /(?:\b(?:work\s*from\s*home\s*earn|part[- ]?time\s*job\s*earn\s*(?:rs|inr|₹)?\s*\d+|like\s*youtube\s*videos?\s*earn|telegram\s*(?:task|job|hr)|earn\s*(?:rs|inr|₹)?\s*\d+\s*(?:daily|per\s*day)|hotel\s*review\s*job|rating\s*tasks?\s*income)\b)/i,
+          title: 'Fake Job Offer or Daily Task Scam',
+          whyItMatters: 'Scammers promise outsized earnings for trivial activities (e.g., liking YouTube videos) to lure victims into Telegram groups, subsequently demanding "prepaid deposits" to unlock promised funds.',
+          recommendedAction: 'Discard unsolicited job offers received via WhatsApp or Telegram. Reputable corporate employers never hire through anonymous channels or charge fees to begin work.'
+        },
+        {
+          id: 'guaranteed-returns',
+          category: 'Investment Fraud',
+          weight: 25,
+          regex: /(?:\b(?:guaranteed\s*(?:returns?|profit|income)|double\s*(?:your\s*)?money\s*in|100%\s*profit|daily\s*(?:return|profit)\s*\d+%\s*|crypto\s*(?:trading\s*)?pool\s*profit|forex\s*guaranteed|vip\s*trading\s*group)\b)/i,
+          title: 'Guaranteed Investment Returns',
+          whyItMatters: 'All legitimate capital markets carry risk. Any promise of high guaranteed returns or doubling funds in days is legally impossible and the hallmark of an illegal Ponzi scheme.',
+          recommendedAction: 'Never invest in unauthorized schemes. Check registered broker licenses only on the Securities and Exchange Board of India portal (sebi.gov.in).'
+        },
+        {
+          id: 'unusual-payment',
+          category: 'Coercive Payment',
+          weight: 20,
+          regex: /(?:\b(?:pay\s*(?:via|with|using)\s*gift\s*card|amazon\s*gift\s*card\s*code|itunes\s*card\s*code|crypto(?:currency)?\s*transfer\s*only|advance\s*(?:processing|registration)\s*fee|refundable\s*security\s*deposit|untraceable\s*payment)\b)/i,
+          title: 'Unusual Payment Demand (Gift Cards / Processing Fee)',
+          whyItMatters: 'Gift card vouchers and irreversible cryptocurrency transfers cannot be traced or refunded, making them the preferred transaction mechanism for cyber extortionists and imposters.',
+          recommendedAction: 'Never pay taxes, utility bills, or official fees using gift cards or vouchers. Legitimate corporate or government entities never accept gift cards.'
+        },
+        {
+          id: 'click-login',
+          category: 'Credential Harvesting',
+          weight: 20,
+          regex: /(?:\b(?:click\s*(?:here\s*)?(?:to\s*)?(?:login|sign\s*in|verify|authenticate)|tap\s*(?:here|link)\s*to\s*(?:confirm|access)|visit\s*(?:portal|link)\s*to\s*re-?login|open\s*link\s*to\s*restore\s*access)\b)/i,
+          title: 'Click-the-Link Login Prompt',
+          whyItMatters: 'Directing recipients to authenticate through hyperlinks embedded in unexpected messages is the classic mechanism used to funnel victims to lookalike login spoofing pages.',
+          recommendedAction: 'Do not follow authentication links from messages. Open a fresh browser window and manually navigate to your service provider.'
+        },
+        {
+          id: 'risky-attachments',
+          category: 'Malware Distribution',
+          weight: 20,
+          regex: /(?:\b[\w.-]+\.(?:exe|apk|zip|rar|scr|vbs|bat|cmd|iso|msi|js|wsf|hta|cab)\b)/i,
+          title: 'Risky Attachment File Name (.exe, .apk, .zip)',
+          whyItMatters: 'Dangerous Trojans, keyloggers, and spyware are routinely concealed inside executable programs, Android package kits (.apk), or archived scripts (.zip, .vbs).',
+          recommendedAction: 'Never download or install executable files or mobile APK packages sent through unsolicited emails or messaging apps.'
+        },
+        {
+          id: 'generic-greetings',
+          category: 'Social Engineering',
+          weight: 15,
+          regex: /(?:\b(?:dear\s*(?:customer|user|valued\s*client|account\s*holder|cardholder|member)|attention\s*account\s*holder|dear\s*sir\/madam)\b)/i,
+          title: 'Impersonation or Generic Greeting',
+          whyItMatters: 'Mass automated phishing campaigns rarely possess recipient name metadata, relying instead on generic placeholder salutations that legitimate banks with customer relationships do not use.',
+          recommendedAction: 'Verify whether the message addresses you by your real registered name. Absence of personal details warrants extra scrutiny.'
+        },
+        {
+          id: 'risky-links-shorteners',
+          category: 'Deceptive Link Architecture',
+          weight: 15,
+          regex: /(?:https?:\/\/(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|bit\.ly|tinyurl\.com|t\.co|is\.gd|cutt\.ly|rb\.gy|[\w.-]+\.(?:xyz|top|work|icu|buzz|tk|ml|ga|cf|gq|cam|sbs))\b)/i,
+          title: 'Risky Link (IP Host, Shortener, or Suspicious TLD)',
+          whyItMatters: 'Numeric IP addresses and link shorteners intentionally mask where a hyperlink will lead, preventing security filters and users from assessing domain legitimacy before navigating.',
+          recommendedAction: 'Do not click shortened URLs or raw IP addresses. Use link preview utilities to reveal the actual destination server before opening.'
+        },
+        {
+          id: 'free-provider-spoof',
+          category: 'Sender Spoofing',
+          weight: 10,
+          regex: null, // Custom evaluation in email analyzer
+          title: 'Official Brand Claim from Free Email Provider',
+          whyItMatters: 'Legitimate corporate enterprises and public institutions operate authenticated enterprise email servers (e.g., @sbi.co.in, @paypal.com), never free consumer webmail accounts (@gmail, @yahoo).',
+          recommendedAction: 'Inspect the actual domain following the "@" symbol in the sender address. Disregard official claims originating from free consumer mailboxes.'
+        }
+      ];
+
+      /* ---------------------------------------------------------
+         2. URL Heuristic Engine Rules
+         Parse-only: Never fetches or makes network requests!
+         --------------------------------------------------------- */
+      const URL_SHORTENERS = new Set([
+        'bit.ly', 'tinyurl.com', 't.co', 'is.gd', 'buff.ly', 'ow.ly',
+        'cutt.ly', 'rb.gy', 'shorturl.at', 'tiny.cc', 'rebrand.ly'
+      ]);
+
+      const ABUSED_TLDS = new Set([
+        'xyz', 'top', 'work', 'icu', 'buzz', 'rest', 'tk', 'ml',
+        'ga', 'cf', 'gq', 'cam', 'sbs', 'monster', 'click', 'link'
+      ]);
+
+      const SENSITIVE_KEYWORDS = [
+        'login', 'verify', 'kyc', 'otp', 'upi', 'secure', 'account',
+        'update', 'banking', 'signin', 'password', 'credential',
+        'pan', 'aadhaar', 'wallet', 'security', 'billing', 'confirm'
+      ];
+
+      /* ---------------------------------------------------------
+         3. Application State (In-Memory Only, No LocalStorage)
+         --------------------------------------------------------- */
+      const state = {
+        currentTab: 'url',
+        stats: {
+          total: 0,
+          low: 0,
+          suspicious: 0,
+          high: 0
+        },
+        history: [] // Last 10 records: { id, timestamp, type, score, level, matchedCount }
+      };
+
+      /* ---------------------------------------------------------
+         4. Routing & Tab Controller
+         --------------------------------------------------------- */
+      function navigateTo(hash) {
+        const cleanHash = (hash || '#home').toLowerCase();
+        const validPages = ['#home', '#analyze', '#guide', '#project'];
+        const targetPage = validPages.includes(cleanHash) ? cleanHash : '#home';
+
+        // Update Nav link states
+        document.querySelectorAll('.nav-link').forEach(link => {
+          const href = link.getAttribute('href');
+          if (href === targetPage) {
+            link.setAttribute('aria-current', 'page');
+          } else {
+            link.removeAttribute('aria-current');
+          }
+        });
+
+        // Hide mobile nav if open
+        const navList = document.getElementById('navLinksList');
+        if (navList) navList.classList.remove('is-open');
+
+        // Toggle page visibility
+        document.querySelectorAll('.page-view').forEach(view => {
+          view.classList.remove('active');
+        });
+
+        const activePage = document.getElementById('page-' + targetPage.replace('#', ''));
+        if (activePage) {
+          activePage.classList.add('active');
+          activePage.focus();
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      window.addEventListener('hashchange', () => navigateTo(window.location.hash));
+
+      // Mobile nav hamburger toggle
+      const mobileToggle = document.getElementById('mobileNavToggle');
+      if (mobileToggle) {
+        mobileToggle.addEventListener('click', () => {
+          const navList = document.getElementById('navLinksList');
+          const isExpanded = navList.classList.toggle('is-open');
+          mobileToggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+        });
+      }
+
+      // Theme toggle (Dark Navy default vs Light)
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const themeIconSun = document.getElementById('themeIconSun');
+      const themeIconMoon = document.getElementById('themeIconMoon');
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'light') {
+          themeIconSun.style.display = 'none';
+          themeIconMoon.style.display = 'block';
+        } else {
+          themeIconSun.style.display = 'block';
+          themeIconMoon.style.display = 'none';
+        }
+      }
+
+      if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+          const current = document.documentElement.getAttribute('data-theme') || 'dark';
+          setTheme(current === 'dark' ? 'light' : 'dark');
+        });
+      }
+
+      // Tab switcher in Analyze page
+      const tabBtns = {
+        url: document.getElementById('tab-btn-url'),
+        email: document.getElementById('tab-btn-email'),
+        sms: document.getElementById('tab-btn-sms')
+      };
+
+      const tabPanels = {
+        url: document.getElementById('panel-url'),
+        email: document.getElementById('panel-email'),
+        sms: document.getElementById('panel-sms')
+      };
+
+      function switchAnalyzerTab(tabKey) {
+        state.currentTab = tabKey;
+        Object.keys(tabBtns).forEach(k => {
+          const isSelected = k === tabKey;
+          tabBtns[k].setAttribute('aria-selected', isSelected ? 'true' : 'false');
+          if (isSelected) {
+            tabPanels[k].classList.add('active');
+          } else {
+            tabPanels[k].classList.remove('active');
+          }
+        });
+      }
+
+      Object.keys(tabBtns).forEach(k => {
+        tabBtns[k].addEventListener('click', () => switchAnalyzerTab(k));
+      });
+
+      // Clear form button
+      document.getElementById('clearInputsBtn').addEventListener('click', () => {
+        document.getElementById('urlInput').value = '';
+        document.getElementById('emailSender').value = '';
+        document.getElementById('emailSubject').value = '';
+        document.getElementById('emailBody').value = '';
+        document.getElementById('emailAttachments').value = '';
+        document.getElementById('smsSender').value = '';
+        document.getElementById('smsBody').value = '';
+        updateCharCounts();
+        document.getElementById('resultsSection').style.display = 'none';
+      });
+
+      // Character count listeners
+      const urlInput = document.getElementById('urlInput');
+      const emailBody = document.getElementById('emailBody');
+      const smsBody = document.getElementById('smsBody');
+
+      function updateCharCounts() {
+        document.getElementById('urlCharCount').textContent = (urlInput.value.length) + ' / 2048 chars';
+        document.getElementById('emailCharCount').textContent = (emailBody.value.length) + ' / 10000 chars';
+        document.getElementById('smsCharCount').textContent = (smsBody.value.length) + ' / 5000 chars';
+      }
+
+      urlInput.addEventListener('input', updateCharCounts);
+      emailBody.addEventListener('input', updateCharCounts);
+      smsBody.addEventListener('input', updateCharCounts);
+
+      /* ---------------------------------------------------------
+         5. Detection & Parsing Algorithms
+         --------------------------------------------------------- */
+
+      // URL Threat Analyzer (Parse-Only, Never fetch remote data)
+      function analyzeUrl(rawUrl) {
+        const indicators = [];
+        let score = 0;
+        const trimmed = rawUrl.trim();
+
+        if (!trimmed) {
+          return { score: 0, level: 'Low Risk', indicators: [], category: 'Empty Input' };
+        }
+
+        // Safe normalization for URL object constructor
+        let normalized = trimmed;
+        if (!/^https?:\/\//i.test(normalized)) {
+          normalized = 'http://' + normalized;
+        }
+
+        let parsed = null;
+        try {
+          parsed = new URL(normalized);
+        } catch (e) {
+          // Flag malformed or invalid syntax
+          indicators.push({
+            id: 'url-malformed-syntax',
+            title: 'Malformed URL Syntax',
+            category: 'URL Structure Anomaly',
+            weight: 20,
+            matchedText: trimmed.slice(0, 80),
+            whyItMatters: 'Legitimate web resources adhere strictly to standard URI RFC specifications. Malformed URLs often attempt to exploit browser parser discrepancies.',
+            recommendedAction: 'Do not attempt to visit malformed web links.'
+          });
+          score += 20;
+          return finalizeAnalysis('URL', score, indicators, 'Malformed URL');
+        }
+
+        const hostname = parsed.hostname.toLowerCase();
+        const pathname = parsed.pathname.toLowerCase();
+        const href = parsed.href;
+
+        // Rule 1: Raw IP host (30)
+        const ipv4Regex = /^(?:\d{1,3}\.){3}\d{1,3}$/;
+        const ipv6Regex = /^\[?[a-f0-9:]+\]?$/i;
+        if (ipv4Regex.test(hostname) || (hostname.startsWith('[') && hostname.endsWith(']'))) {
+          indicators.push({
+            id: 'url-ip-host',
+            title: 'Raw IP Address Host',
+            category: 'Deceptive Link Architecture',
+            weight: 30,
+            matchedText: hostname,
+            whyItMatters: 'Legitimate corporate organizations host production services on registered domain names with DNS records. Bare numeric IP addresses are frequently used by temporary phishing servers to bypass domain-based reputation filters.',
+            recommendedAction: 'Never authenticate or submit credentials to a bare IP address URL.'
+          });
+          score += 30;
+        }
+
+        // Rule 2: Punycode (25)
+        if (hostname.includes('xn--')) {
+          indicators.push({
+            id: 'url-punycode',
+            title: 'Punycode Internationalized Domain (IDN Homograph)',
+            category: 'Homograph Impersonation',
+            weight: 25,
+            matchedText: hostname,
+            whyItMatters: 'Punycode (xn--) allows foreign Cyrillic or Greek characters that look visually identical to Latin letters (e.g., Cyrillic "а" vs Latin "a"), enabling deceptive brand impersonation spoofing.',
+            recommendedAction: 'Exercise extreme caution with punycode links; verify the true ASCII destination.'
+          });
+          score += 25;
+        }
+
+        // Rule 3: Authority "@" Trick (25)
+        if (trimmed.includes('@')) {
+          indicators.push({
+            id: 'url-at-trick',
+            title: 'URL Authority "@" Userinfo Redirection Trick',
+            category: 'Deceptive Link Architecture',
+            weight: 25,
+            matchedText: trimmed.slice(0, Math.min(trimmed.indexOf('@') + 15, trimmed.length)),
+            whyItMatters: 'In standard URI syntax, everything preceding an "@" sign is treated as username information and discarded by modern browsers. For example, "http://google.com@evil-site.com" directs exclusively to evil-site.com while visually deceiving victims.',
+            recommendedAction: 'Never open links containing an "@" symbol in the authority segment.'
+          });
+          score += 25;
+        }
+
+        // Rule 4: URL Shorteners (15)
+        if (URL_SHORTENERS.has(hostname) || hostname.endsWith('.bit.ly')) {
+          indicators.push({
+            id: 'url-shortener',
+            title: 'URL Shortener Service Masking Destination',
+            category: 'Deceptive Link Architecture',
+            weight: 15,
+            matchedText: hostname,
+            whyItMatters: 'URL shorteners obscure the real domain name and path, preventing user inspection and bypassing network domain security filters before click-through.',
+            recommendedAction: 'Use an online URL expander or append "+" to the shortened link to preview the destination before navigating.'
+          });
+          score += 15;
+        }
+
+        // Rule 5: 3+ Subdomains (15)
+        const parts = hostname.split('.');
+        // e.g. login.secure.verify.sbi.com.bad.com
+        if (parts.length >= 5) {
+          indicators.push({
+            id: 'url-subdomains',
+            title: 'Excessive Subdomain Nesting (3+ Subdomains)',
+            category: 'Domain Structure Anomaly',
+            weight: 15,
+            matchedText: hostname,
+            whyItMatters: 'Attackers create deeply nested subdomains (e.g. "sbi.bank.login.portal.scam.net") so that mobile browsers with narrow address bars display only the trusted brand name.',
+            recommendedAction: 'Examine the actual domain right before the first single forward slash.'
+          });
+          score += 15;
+        }
+
+        // Rule 6: Frequently Abused TLDs (10)
+        const tld = parts[parts.length - 1];
+        if (ABUSED_TLDS.has(tld)) {
+          indicators.push({
+            id: 'url-abused-tld',
+            title: 'Frequently Abused Top-Level Domain (.' + tld + ')',
+            category: 'Suspicious Domain Infrastructure',
+            weight: 10,
+            matchedText: '.' + tld,
+            whyItMatters: 'Certain low-cost or unverified TLDs (.xyz, .top, .work, .icu, .buzz) feature disproportionate concentrations of transient spam and malicious hosting campaigns.',
+            recommendedAction: 'Be cautious when entering credentials on sites utilizing unverified non-standard TLDs.'
+          });
+          score += 10;
+        }
+
+        // Rule 7: 2+ Sensitive Keywords in Path/Subdomains (15)
+        const combinedPath = (hostname + ' ' + pathname).toLowerCase();
+        const foundKeywords = [];
+        SENSITIVE_KEYWORDS.forEach(kw => {
+          if (combinedPath.includes(kw)) {
+            foundKeywords.push(kw);
+          }
+        });
+        if (foundKeywords.length >= 2) {
+          indicators.push({
+            id: 'url-sensitive-keywords',
+            title: 'Multiple Sensitive Credential Keywords in URL Path',
+            category: 'Credential Harvesting',
+            weight: 15,
+            matchedText: foundKeywords.slice(0, 4).join(', '),
+            whyItMatters: 'Concentrating multiple authentication tokens ("login", "kyc", "verify", "otp", "upi") inside subdomains and paths is a signature characteristic of targeted phishing landing pages.',
+            recommendedAction: 'Confirm you are on the authenticated root domain of your service provider before entering account credentials.'
+          });
+          score += 15;
+        }
+
+        // Rule 8: Very Long URL > 75 Characters (10)
+        if (trimmed.length > 75) {
+          indicators.push({
+            id: 'url-excessive-length',
+            title: 'Excessive URL Length (> 75 Characters)',
+            category: 'Evasion Technique',
+            weight: 10,
+            matchedText: trimmed.length + ' characters total',
+            whyItMatters: 'Excessively long URLs push suspicious hostname endings beyond the visible viewport boundaries on mobile screens and email clients.',
+            recommendedAction: 'Review the full URL path carefully before proceeding.'
+          });
+          score += 10;
+        }
+
+        return finalizeAnalysis('URL', score, indicators, 'URL Structural Analysis');
+      }
+
+      // Text Message / Email Analyzer
+      function analyzeTextContent(type, sender, subject, body, attachments) {
+        const indicators = [];
+        let score = 0;
+        const combinedText = [sender, subject, body, attachments].filter(Boolean).join('\n');
+
+        if (!combinedText.trim()) {
+          return { score: 0, level: 'Low Risk', indicators: [], category: 'Empty Input' };
+        }
+
+        // Execute regex rules matrix
+        RULES.forEach(rule => {
+          if (!rule.regex) return; // Special handling below for custom logic
+
+          const match = combinedText.match(rule.regex);
+          if (match) {
+            indicators.push({
+              id: rule.id,
+              title: rule.title,
+              category: rule.category,
+              weight: rule.weight,
+              matchedText: match[0].trim(),
+              whyItMatters: rule.whyItMatters,
+              recommendedAction: rule.recommendedAction
+            });
+            score += rule.weight;
+          }
+        });
+
+        // Special Rule: Official brand claim from free email provider
+        if (type === 'Email' && sender) {
+          const freeMailRegex = /@(?:gmail\.com|yahoo\.com|hotmail\.com|outlook\.com|protonmail\.com|rediffmail\.com)\b/i;
+          const brandKeywords = /(?:sbi|hdfc|icici|paypal|google|microsoft|apple|reserve\s*bank|rbi|income\s*tax|customs|support|security|alert|fraud|helpdesk)\b/i;
+
+          const isFreeMail = freeMailRegex.test(sender);
+          const claimsBrand = brandKeywords.test(sender) || (subject && brandKeywords.test(subject));
+
+          if (isFreeMail && claimsBrand) {
+            const senderMatch = sender.match(freeMailRegex);
+            indicators.push({
+              id: 'free-provider-spoof',
+              title: 'Official Brand Claim from Free Email Provider',
+              category: 'Sender Spoofing',
+              weight: 10,
+              matchedText: sender.trim(),
+              whyItMatters: 'Legitimate corporate enterprises and public institutions operate authenticated enterprise email servers (e.g., @sbi.co.in, @paypal.com), never free consumer webmail accounts (@gmail, @yahoo).',
+              recommendedAction: 'Inspect the actual domain following the "@" symbol in the sender address. Disregard official claims originating from free consumer mailboxes.'
+            });
+            score += 10;
+          }
+        }
+
+        // Also check if any raw URL inside the message triggers URL-specific indicators
+        const urlMatches = combinedText.match(/https?:\/\/[^\s"'<>]+/gi);
+        if (urlMatches) {
+          urlMatches.slice(0, 2).forEach(foundUrl => {
+            try {
+              const u = new URL(foundUrl);
+              if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(u.hostname)) {
+                // Ensure not already added as duplicate
+                if (!indicators.some(i => i.id === 'embedded-ip-link')) {
+                  indicators.push({
+                    id: 'embedded-ip-link',
+                    title: 'Embedded Raw IP Link Inside Message',
+                    category: 'Deceptive Link Architecture',
+                    weight: 20,
+                    matchedText: foundUrl,
+                    whyItMatters: 'Links inside messages pointing to numeric IP addresses are designed to evade domain reputation blocklists.',
+                    recommendedAction: 'Do not tap links displaying raw numeric IP addresses.'
+                  });
+                  score += 20;
+                }
+              }
+            } catch(e) {
+              // Ignore invalid url parse
+            }
+          });
+        }
+
+        return finalizeAnalysis(type, score, indicators, 'Content & Semantic Analysis');
+      }
+
+      // Finalize scoring, bounds, and confidence
+      function finalizeAnalysis(type, rawScore, indicators, detectionMethod) {
+        const cappedScore = Math.min(100, Math.max(0, rawScore));
+
+        let level = 'Low Risk';
+        if (cappedScore >= 60) {
+          level = 'High Risk';
+        } else if (cappedScore >= 30) {
+          level = 'Suspicious';
+        }
+
+        // Threat Category synthesis
+        let primaryCategory = 'Nominal / No Immediate Indicators';
+        if (indicators.length > 0) {
+          // Find the category of the highest weight indicator
+          const sorted = [...indicators].sort((a, b) => b.weight - a.weight);
+          primaryCategory = sorted[0].category;
+          if (sorted.length > 1 && sorted[1].category !== primaryCategory) {
+            primaryCategory += ' & ' + sorted[1].category;
+          }
+        }
+
+        // Confidence calculation
+        let confidence = 'Baseline (Zero Flags)';
+        if (indicators.length >= 3 || cappedScore >= 60) {
+          confidence = 'High (Multiple Corroborating Indicators)';
+        } else if (indicators.length >= 1 || cappedScore >= 30) {
+          confidence = 'Moderate (Specific Threat Heuristics)';
+        }
+
+        const timestamp = new Date().toLocaleTimeString(undefined, {
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+
+        return {
+          id: 'report_' + Date.now(),
+          type: type,
+          score: cappedScore,
+          level: level,
+          category: primaryCategory,
+          timestamp: timestamp,
+          detectionMethod: detectionMethod,
+          confidence: confidence,
+          indicators: indicators,
+          scoreType: 'Heuristic additive weight sum (0–100), NOT a calibrated statistical probability',
+          caveat: 'Heuristic indicators flag observable manipulation patterns commonly found in cyber attacks. Legitimate transactional notifications may occasionally trigger rules, while sophisticated targeted attacks may attempt evasion. Always verify through independent official channels.'
+        };
+      }
+
+      /* ---------------------------------------------------------
+         6. Results Rendering & DOM Operations (XSS-Safe)
+         --------------------------------------------------------- */
+      function renderResults(report) {
+        // Update Session Stats
+        state.stats.total++;
+        if (report.level === 'High Risk') state.stats.high++;
+        else if (report.level === 'Suspicious') state.stats.suspicious++;
+        else state.stats.low++;
+
+        document.getElementById('statTotalCount').textContent = state.stats.total;
+        document.getElementById('statLowCount').textContent = state.stats.low;
+        document.getElementById('statSuspiciousCount').textContent = state.stats.suspicious;
+        document.getElementById('statHighCount').textContent = state.stats.high;
+
+        // Append to history (last 10 only, NO message text or URL stored!)
+        state.history.unshift({
+          id: state.history.length + 1,
+          time: report.timestamp,
+          type: report.type,
+          score: report.score,
+          level: report.level,
+          matchedCount: report.indicators.length
+        });
+        if (state.history.length > 10) state.history.pop();
+        renderHistoryTable();
+
+        // Reveal Results Section
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsCard = document.getElementById('resultsCard');
+        resultsSection.style.display = 'block';
+
+        // Border color on results card
+        resultsCard.className = 'results-card';
+        if (report.level === 'High Risk') resultsCard.classList.add('border-high');
+        else if (report.level === 'Suspicious') resultsCard.classList.add('border-suspicious');
+        else resultsCard.classList.add('border-low');
+
+        // Update Semicircle Gauge
+        const scoreText = document.getElementById('gaugeScoreText');
+        const progressPath = document.getElementById('gaugeProgressPath');
+        const verdictBadge = document.getElementById('verdictBadge');
+
+        scoreText.textContent = report.score;
+
+        // Arc length = PI * 100 ~ 314.16
+        const totalArc = 314.16;
+        const progressOffset = totalArc - (totalArc * (report.score / 100));
+        progressPath.style.strokeDashoffset = progressOffset.toFixed(2);
+
+        let strokeColor = 'var(--risk-low)';
+        if (report.level === 'High Risk') strokeColor = 'var(--risk-high)';
+        else if (report.level === 'Suspicious') strokeColor = 'var(--risk-suspicious)';
+        progressPath.style.stroke = strokeColor;
+
+        verdictBadge.textContent = report.level;
+        verdictBadge.className = 'verdict-badge';
+        if (report.level === 'High Risk') verdictBadge.classList.add('verdict-high');
+        else if (report.level === 'Suspicious') verdictBadge.classList.add('verdict-suspicious');
+        else verdictBadge.classList.add('verdict-low');
+
+        // Text metadata
+        document.getElementById('resultClassificationText').textContent = report.level + ' (' + report.score + ' / 100)';
+        document.getElementById('resultCategoryText').textContent = report.category;
+        document.getElementById('resultTimestampText').textContent = report.timestamp;
+        document.getElementById('resultMethodText').textContent = report.detectionMethod;
+        document.getElementById('resultConfidenceText').textContent = report.confidence;
+        document.getElementById('resultMatchedCountText').textContent = report.indicators.length + ' rules matched';
+
+        // Render Verbatim Indicators (Using textContent only to prevent XSS)
+        const indicatorsListEl = document.getElementById('indicatorsList');
+        indicatorsListEl.innerHTML = '';
+
+        if (report.indicators.length === 0) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.className = 'indicator-card';
+
+          const emptyTitle = document.createElement('div');
+          emptyTitle.className = 'indicator-title';
+          emptyTitle.style.color = 'var(--risk-low)';
+          emptyTitle.textContent = 'No Threat Indicators Detected';
+          emptyDiv.appendChild(emptyTitle);
+
+          const emptyDesc = document.createElement('p');
+          emptyDesc.className = 'card-desc';
+          emptyDesc.style.marginTop = '0.5rem';
+          emptyDesc.textContent = 'The input did not trigger any of our weighted heuristic rules. Remember: the absence of indicators does not guarantee absolute safety against novel zero-day vectors. Always verify unexpected requests through trusted channels.';
+          emptyDiv.appendChild(emptyDesc);
+
+          indicatorsListEl.appendChild(emptyDiv);
+        } else {
+          report.indicators.forEach((ind, index) => {
+            const card = document.createElement('div');
+            card.className = 'indicator-card';
+
+            // Header
+            const header = document.createElement('div');
+            header.className = 'indicator-header';
+
+            const titleGroup = document.createElement('div');
+            titleGroup.className = 'indicator-title-group';
+
+            const title = document.createElement('span');
+            title.className = 'indicator-title';
+            title.textContent = (index + 1) + '. ' + ind.title;
+            titleGroup.appendChild(title);
+
+            const weight = document.createElement('span');
+            weight.className = 'indicator-weight';
+            weight.textContent = '+' + ind.weight + ' weight';
+            titleGroup.appendChild(weight);
+
+            header.appendChild(titleGroup);
+
+            const cat = document.createElement('span');
+            cat.style.fontSize = '0.8rem';
+            cat.style.color = 'var(--text-muted)';
+            cat.textContent = ind.category;
+            header.appendChild(cat);
+
+            card.appendChild(header);
+
+            // Verbatim matched evidence box
+            const evidenceBox = document.createElement('div');
+            evidenceBox.className = 'evidence-box';
+            const evidenceLabel = document.createElement('div');
+            evidenceLabel.style.fontSize = '0.75rem';
+            evidenceLabel.style.textTransform = 'uppercase';
+            evidenceLabel.style.color = 'var(--text-muted)';
+            evidenceLabel.style.marginBottom = '0.25rem';
+            evidenceLabel.textContent = 'Verbatim Extracted Evidence:';
+            evidenceBox.appendChild(evidenceLabel);
+
+            const evidenceCode = document.createElement('code');
+            evidenceCode.textContent = ind.matchedText; // STRICTLY SAFE TEXT
+            evidenceBox.appendChild(evidenceCode);
+            card.appendChild(evidenceBox);
+
+            // Why it matters
+            const whyRow = document.createElement('div');
+            whyRow.className = 'indicator-detail-row';
+            const whyLabel = document.createElement('span');
+            whyLabel.className = 'indicator-detail-label';
+            whyLabel.textContent = 'Why It Matters: ';
+            const whyText = document.createElement('span');
+            whyText.className = 'indicator-detail-text';
+            whyText.textContent = ind.whyItMatters;
+            whyRow.appendChild(whyLabel);
+            whyRow.appendChild(whyText);
+            card.appendChild(whyRow);
+
+            // What to do
+            const actRow = document.createElement('div');
+            actRow.className = 'indicator-detail-row';
+            const actLabel = document.createElement('span');
+            actLabel.className = 'indicator-detail-label';
+            actLabel.style.color = 'var(--accent-teal)';
+            actLabel.textContent = 'Recommended Action: ';
+            const actText = document.createElement('span');
+            actText.className = 'indicator-detail-text';
+            actText.textContent = ind.recommendedAction;
+            actRow.appendChild(actLabel);
+            actRow.appendChild(actText);
+            card.appendChild(actRow);
+
+            indicatorsListEl.appendChild(card);
+          });
+        }
+
+        // Update JSON Report Code
+        const jsonCodeEl = document.getElementById('jsonReportCode');
+        jsonCodeEl.textContent = JSON.stringify(report, null, 2);
+
+        // Smooth scroll to results
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      // Render History Table (Strictly NO message text or raw URL)
+      function renderHistoryTable() {
+        const tbody = document.getElementById('historyTableBody');
+        tbody.innerHTML = '';
+
+        if (state.history.length === 0) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = 6;
+          td.className = 'text-center';
+          td.style.padding = '1.5rem';
+          td.style.color = 'var(--text-muted)';
+          td.textContent = 'No analyses performed in this session yet. Run an analysis above to see scores.';
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          return;
+        }
+
+        state.history.forEach(item => {
+          const tr = document.createElement('tr');
+
+          const tdId = document.createElement('td');
+          tdId.className = 'tabular-nums';
+          tdId.textContent = '#' + item.id;
+          tr.appendChild(tdId);
+
+          const tdTime = document.createElement('td');
+          tdTime.className = 'tabular-nums';
+          tdTime.textContent = item.time;
+          tr.appendChild(tdTime);
+
+          const tdType = document.createElement('td');
+          tdType.textContent = item.type;
+          tr.appendChild(tdType);
+
+          const tdScore = document.createElement('td');
+          tdScore.className = 'tabular-nums';
+          tdScore.style.fontWeight = '600';
+          tdScore.textContent = item.score + ' / 100';
+          tr.appendChild(tdScore);
+
+          const tdLevel = document.createElement('td');
+          const badge = document.createElement('span');
+          badge.className = 'history-badge';
+          badge.textContent = item.level;
+          if (item.level === 'High Risk') {
+            badge.style.backgroundColor = 'var(--risk-high-bg)';
+            badge.style.color = 'var(--risk-high)';
+          } else if (item.level === 'Suspicious') {
+            badge.style.backgroundColor = 'var(--risk-suspicious-bg)';
+            badge.style.color = 'var(--risk-suspicious)';
+          } else {
+            badge.style.backgroundColor = 'var(--risk-low-bg)';
+            badge.style.color = 'var(--risk-low)';
+          }
+          tdLevel.appendChild(badge);
+          tr.appendChild(tdLevel);
+
+          const tdMatched = document.createElement('td');
+          tdMatched.className = 'tabular-nums';
+          tdMatched.textContent = item.matchedCount + ' indicators';
+          tr.appendChild(tdMatched);
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+        state.history = [];
+        renderHistoryTable();
+      });
+
+      // Copy JSON button
+      const copyJsonBtn = document.getElementById('copyJsonBtn');
+      copyJsonBtn.addEventListener('click', () => {
+        const text = document.getElementById('jsonReportCode').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          const span = copyJsonBtn.querySelector('span');
+          const original = span.textContent;
+          span.textContent = 'Copied to Clipboard!';
+          setTimeout(() => {
+            span.textContent = original;
+          }, 2000);
+        }).catch(() => {
+          alert('Unable to access clipboard. Please select and copy manually.');
+        });
+      });
+
+      /* ---------------------------------------------------------
+         7. Form Submission Handlers
+         --------------------------------------------------------- */
+      document.getElementById('urlForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = document.getElementById('urlInput').value.trim();
+        if (!val) return;
+        const report = analyzeUrl(val);
+        renderResults(report);
+      });
+
+      document.getElementById('emailForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const sender = document.getElementById('emailSender').value.trim();
+        const subject = document.getElementById('emailSubject').value.trim();
+        const body = document.getElementById('emailBody').value.trim();
+        const attachments = document.getElementById('emailAttachments').value.trim();
+
+        if (!body) return;
+        const report = analyzeTextContent('Email', sender, subject, body, attachments);
+        renderResults(report);
+      });
+
+      document.getElementById('smsForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const sender = document.getElementById('smsSender').value.trim();
+        const body = document.getElementById('smsBody').value.trim();
+
+        if (!body) return;
+        const report = analyzeTextContent('SMS', sender, '', body, '');
+        renderResults(report);
+      });
+
+      /* ---------------------------------------------------------
+         8. Sample Pre-fills (8 Dedicated Real-World Scenarios)
+         --------------------------------------------------------- */
+      const SAMPLES = {
+        'safe-url': {
+          type: 'url',
+          url: 'https://en.wikipedia.org/wiki/Phishing'
+        },
+        'ip-url': {
+          type: 'url',
+          url: 'http://192.168.1.105/bank/secure-login.php?verify=account&token=7891'
+        },
+        'shortened-url': {
+          type: 'url',
+          url: 'https://bit.ly/3xSecUr3-kyc-update'
+        },
+        'fake-kyc-sms': {
+          type: 'sms',
+          sender: 'VK-SBIINB',
+          body: 'Dear Customer, Your SBI account KYC has expired. Your debit card will be blocked within 24 hrs. Click here http://192.168.0.4/sbi-kyc to update PAN & Aadhaar immediately.'
+        },
+        'parcel-fee-sms': {
+          type: 'sms',
+          sender: 'IndiaPost',
+          body: 'IndiaPost: Your package IN9827364 cannot be delivered due to pending customs fee of ₹48. Pay now to avoid return: http://customs-indiapost-clearance.top/pay'
+        },
+        'prize-scam-sms': {
+          type: 'sms',
+          sender: '+919876543210',
+          body: 'Congratulations! You have won ₹25,00,000 in KBC Lucky Draw 2026. Send your UPI ID and pay ₹2,500 registration charge to claim immediately.'
+        },
+        'harmless-sms': {
+          type: 'sms',
+          sender: 'Rahul',
+          body: 'Hey team, let us meet tomorrow at 5 PM at the college library to finish our cybersecurity presentation slides. Bring your laptops.'
+        },
+        'phishing-email': {
+          type: 'email',
+          sender: 'HDFC Security Alerts <security-alerts-desk@gmail.com>',
+          subject: 'URGENT: Immediate Account Verification Required within 12 hours',
+          body: 'Dear Valued Customer,\n\nWe detected unauthorized login attempts from an unknown device. Your net banking access will be suspended within 12 hours unless you confirm your identity.\n\nClick the link below to verify your password and enter your 6-digit OTP immediately:\nhttp://account-verify-login.xyz/auth\n\nPlease also review the attached security-patch.exe to verify your machine.',
+          attachments: 'security-patch.exe, details.zip'
+        }
+      };
+
+      document.querySelectorAll('.btn-sample').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sampleKey = btn.getAttribute('data-sample');
+          const sample = SAMPLES[sampleKey];
+          if (!sample) return;
+
+          if (sample.type === 'url') {
+            switchAnalyzerTab('url');
+            document.getElementById('urlInput').value = sample.url;
+            updateCharCounts();
+            const report = analyzeUrl(sample.url);
+            renderResults(report);
+          } else if (sample.type === 'email') {
+            switchAnalyzerTab('email');
+            document.getElementById('emailSender').value = sample.sender;
+            document.getElementById('emailSubject').value = sample.subject;
+            document.getElementById('emailBody').value = sample.body;
+            document.getElementById('emailAttachments').value = sample.attachments;
+            updateCharCounts();
+            const report = analyzeTextContent('Email', sample.sender, sample.subject, sample.body, sample.attachments);
+            renderResults(report);
+          } else if (sample.type === 'sms') {
+            switchAnalyzerTab('sms');
+            document.getElementById('smsSender').value = sample.sender;
+            document.getElementById('smsBody').value = sample.body;
+            updateCharCounts();
+            const report = analyzeTextContent('SMS', sample.sender, '', sample.body, '');
+            renderResults(report);
+          }
+        });
+      });
+
+      /* ---------------------------------------------------------
+         9. Dynamic Rules Table Populator (About Project Page)
+         Populated from the EXACT same RULES array!
+         --------------------------------------------------------- */
+      function populateProjectRulesTable() {
+        const tbody = document.getElementById('projectRulesTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        RULES.forEach(r => {
+          const tr = document.createElement('tr');
+
+          // Rule ID
+          const tdId = document.createElement('td');
+          const codeId = document.createElement('code');
+          codeId.style.fontFamily = 'var(--font-mono)';
+          codeId.style.fontSize = '0.8rem';
+          codeId.style.color = 'var(--accent-teal)';
+          codeId.textContent = r.id;
+          tdId.appendChild(codeId);
+          tr.appendChild(tdId);
+
+          // Category
+          const tdCat = document.createElement('td');
+          tdCat.textContent = r.category;
+          tr.appendChild(tdCat);
+
+          // Weight
+          const tdWeight = document.createElement('td');
+          const badge = document.createElement('span');
+          badge.className = 'rule-weight-badge';
+          badge.textContent = '+' + r.weight;
+          tdWeight.appendChild(badge);
+          tr.appendChild(tdWeight);
+
+          // Title
+          const tdTitle = document.createElement('td');
+          tdTitle.style.fontWeight = '600';
+          tdTitle.style.color = 'var(--text-primary)';
+          tdTitle.textContent = r.title;
+          tr.appendChild(tdTitle);
+
+          // Why it matters
+          const tdWhy = document.createElement('td');
+          tdWhy.textContent = r.whyItMatters;
+          tr.appendChild(tdWhy);
+
+          // Action
+          const tdAct = document.createElement('td');
+          tdAct.style.color = 'var(--accent-teal)';
+          tdAct.textContent = r.recommendedAction;
+          tr.appendChild(tdAct);
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      /* ---------------------------------------------------------
+         10. Single-File HTML Exporter / Downloader
+         Allows academic evaluator to save phishguard.html offline
+         --------------------------------------------------------- */
+      document.getElementById('downloadHtmlBtn').addEventListener('click', () => {
+        const htmlContent = '<!doctype html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'phishguard-explainable-threat-analyzer.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+      /* ---------------------------------------------------------
+         11. Initialization
+         --------------------------------------------------------- */
+      populateProjectRulesTable();
+      updateCharCounts();
+      navigateTo(window.location.hash || '#home');
+
+    })();
+  </script>
+</body>
+</html>

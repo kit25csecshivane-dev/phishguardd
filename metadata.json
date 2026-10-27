@@ -1,0 +1,6 @@
+{
+  "name": "PhishGuard – Intelligent Phishing and Scam Detection",
+  "description": "Intelligent phishing and scam detection using explainable threat analysis. 100% client-side heuristic inspection for suspicious URLs, emails, and SMS messages.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
